@@ -1,4 +1,4 @@
-# Ghidra Debugger Agent for DOSBox-X
+# Ghidra debugger agent for DOSBox-X
 
 WIP
 
