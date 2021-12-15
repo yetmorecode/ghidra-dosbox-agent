@@ -1,4 +1,4 @@
-package yetmorecode.ghidra.dosbox.manager;
+package yetmorecode.ghidra.console.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import ghidra.util.Msg;
-import yetmorecode.ghidra.dosbox.manager.command.Command;
-import yetmorecode.ghidra.dosbox.manager.event.CommandCompletedEvent;
-import yetmorecode.ghidra.dosbox.manager.event.Event;
+import yetmorecode.ghidra.console.Cause;
+import yetmorecode.ghidra.console.event.CommandCompletedEvent;
+import yetmorecode.ghidra.console.event.Event;
 
 public class PendingCommand<T> extends CompletableFuture<T> implements Cause {
 	private final Command<? extends T> command;
@@ -28,12 +27,12 @@ public class PendingCommand<T> extends CompletableFuture<T> implements Cause {
 	 * Finish the execution of this command
 	 */
 	public void finish() {
-		Msg.debug(this, "finishing: " + command);
 		try {
 			T result = command.complete(this);
 			complete(result);
 		}
 		catch (Throwable e) {
+			e.printStackTrace();
 			completeExceptionally(e);
 		}
 	}

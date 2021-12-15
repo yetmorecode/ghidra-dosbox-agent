@@ -3,8 +3,14 @@ package yetmorecode.ghidra.dosbox.model;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import agent.gdb.manager.impl.cmd.GdbCommandError;
+import ghidra.async.AsyncUtils;
 import ghidra.dbg.DebuggerModelClosedReason;
 import ghidra.dbg.agent.AbstractDebuggerObjectModel;
+import ghidra.dbg.error.DebuggerModelTerminatingException;
+import ghidra.dbg.error.DebuggerUserException;
 import ghidra.dbg.target.TargetObject;
 import ghidra.dbg.target.schema.AnnotatedSchemaContext;
 import ghidra.dbg.target.schema.TargetObjectSchema;
@@ -12,6 +18,8 @@ import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.address.DefaultAddressFactory;
 import ghidra.program.model.address.GenericAddressSpace;
+import ghidra.util.Msg;
+import yetmorecode.ghidra.console.CommandError;
 import yetmorecode.ghidra.dosbox.manager.DosboxManager;
 import yetmorecode.ghidra.dosbox.model.target.SessionModel;
 
@@ -29,21 +37,33 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 		new DefaultAddressFactory(new AddressSpace[] { space });
 	
 
-	public DosboxManager dosbox;
+	public DosboxManager dosboxManager;
 	private SessionModel session;
 	protected final CompletableFuture<SessionModel> completedSession;
 	
-	public DosboxModel() {
+	protected String hostname = "localhost";
+	protected int port = 3000;
+	
+	public DosboxModel(String hostname, int port) {
 		super();
-		dosbox = new DosboxManager();
+		this.hostname = hostname;
+		this.port = port;
+		dosboxManager = new DosboxManager(hostname, port);
 		session = new SessionModel(this, ROOT_SCHEMA);
 		completedSession = CompletableFuture.completedFuture(session);
 	}
 	
 	public CompletableFuture<Void> start() {
 		return CompletableFuture.runAsync(() -> {
+			try {
+				// connect to dosbox
+				dosboxManager.start();
+			}
+			catch (IOException e) {
+				throw new DebuggerModelTerminatingException("Cannot connect to DOSBox-X: " + e.getMessage(), e);
+			}
 		}).thenCompose(__ -> {
-			return dosbox.runRC();
+			return dosboxManager.runRC();
 		});
 	}
 	
@@ -53,11 +73,17 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 	}
 
 	public void terminate() throws IOException {
+		Msg.info(this, "terminate model");
 		listeners.fire.modelClosed(DebuggerModelClosedReason.NORMAL);
-		session.invalidateSubtree(session, "GDB is terminating");
-		dosbox.terminate();
+		session.invalidateSubtree(session, "dosbox is terminating");
+		dosboxManager.terminate();
 	}
 
+	@Override
+	public String getBrief() {
+		return String.format("DOSBox-X (%s:%d)", hostname, port);
+	}
+	
 	@Override
 	public CompletableFuture<? extends TargetObject> fetchModelRoot() {
 		return completedSession;
@@ -65,8 +91,7 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 
 	@Override
 	public boolean isAlive() {
-		//return gdb.getState().isAlive();
-		return true;
+		return dosboxManager.getState().isAlive();
 	}
 
 	@Override
@@ -83,6 +108,15 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 	@Override
 	public TargetObjectSchema getRootSchema() {
 		return ROOT_SCHEMA;
+	}
+	
+	public static <T> T translateEx(Throwable ex) {
+		Throwable t = AsyncUtils.unwrapThrowable(ex);
+		if (t instanceof CommandError) {
+			CommandError err = (CommandError) t;
+			throw new DebuggerUserException(err.getInfo());
+		}
+		return ExceptionUtils.rethrow(ex);
 	}
 
 }

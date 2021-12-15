@@ -1,10 +1,8 @@
-package yetmorecode.ghidra.dosbox.manager.event;
+package yetmorecode.ghidra.console.event;
 
-import agent.gdb.manager.GdbState;
-import yetmorecode.ghidra.dosbox.manager.Cause;
-import yetmorecode.ghidra.dosbox.manager.PendingCommand;
-import yetmorecode.ghidra.dosbox.manager.Cause.Causes;
-import yetmorecode.ghidra.dosbox.manager.DosboxState;
+import yetmorecode.ghidra.console.Cause;
+import yetmorecode.ghidra.console.TargetState;
+import yetmorecode.ghidra.console.command.PendingCommand;
 
 public abstract class Event<T> implements Cause {
 	private final T info;
@@ -43,11 +41,11 @@ public abstract class Event<T> implements Cause {
 	}
 	
 	/**
-	 * If this event implies a new GDB state, get that state
+	 * If this event implies a new state, get that state
 	 * 
 	 * @return the new state, or null for no change
 	 */
-	public DosboxState newState() {
+	public TargetState newState() {
 		return null;
 	}
 	

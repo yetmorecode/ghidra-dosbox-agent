@@ -1,4 +1,4 @@
-package yetmorecode.ghidra.dosbox.manager.event;
+package yetmorecode.ghidra.console.event;
 
 public class ConsoleOutputEvent extends Event<String> {
 	public ConsoleOutputEvent(String info) {

@@ -1,17 +1,15 @@
-package yetmorecode.ghidra.dosbox.manager.command;
+package yetmorecode.ghidra.console.command;
 
-import yetmorecode.ghidra.dosbox.manager.Cause;
-import yetmorecode.ghidra.dosbox.manager.DosboxManager;
-import yetmorecode.ghidra.dosbox.manager.PendingCommand;
-import yetmorecode.ghidra.dosbox.manager.event.CommandCompletedEvent;
-import yetmorecode.ghidra.dosbox.manager.event.CommandRunningEvent;
-import yetmorecode.ghidra.dosbox.manager.event.Event;
+import yetmorecode.ghidra.console.Cause;
+import yetmorecode.ghidra.console.ConsoleManager;
+import yetmorecode.ghidra.console.event.CommandCompletedEvent;
+import yetmorecode.ghidra.console.event.CommandRunningEvent;
+import yetmorecode.ghidra.console.event.Event;
 
 public abstract class Command<T> implements Cause {
-
-	protected DosboxManager manager;
+	protected ConsoleManager manager;
 	
-	public Command(DosboxManager m) {
+	public Command(ConsoleManager m) {
 		manager = m;
 	}
 	

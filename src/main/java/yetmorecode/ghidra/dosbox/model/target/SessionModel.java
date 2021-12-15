@@ -25,10 +25,10 @@ import ghidra.dbg.target.schema.TargetElementType;
 import ghidra.dbg.target.schema.TargetObjectSchema;
 import ghidra.dbg.target.schema.TargetObjectSchemaInfo;
 import ghidra.util.Msg;
+import yetmorecode.ghidra.console.Cause;
+import yetmorecode.ghidra.console.ConsoleOutputListener;
 import yetmorecode.ghidra.dosbox.manager.BreakpointInfo;
-import yetmorecode.ghidra.dosbox.manager.Cause;
-import yetmorecode.ghidra.dosbox.manager.ConsoleOutputListener;
-import yetmorecode.ghidra.dosbox.manager.DosboxEventListener;
+import yetmorecode.ghidra.dosbox.manager.DosboxEventsListener;
 import yetmorecode.ghidra.dosbox.model.DosboxModel;
 import yetmorecode.ghidra.dosbox.model.SelectableObject;
 
@@ -39,13 +39,14 @@ import yetmorecode.ghidra.dosbox.model.SelectableObject;
 )
 public class SessionModel extends DefaultTargetModelRoot implements 
 	TargetAccessConditioned, TargetAttacher, TargetInterpreter, TargetInterruptible,
-	TargetLauncher, TargetActiveScope, TargetEventScope, TargetFocusScope, DosboxEventListener, ConsoleOutputListener {
+	TargetLauncher, TargetActiveScope, TargetEventScope, TargetFocusScope, DosboxEventsListener, ConsoleOutputListener {
 	public DosboxModel model;
-	protected String display = "dosbox 123";
+	protected String display = "DOSBox-X";
 	private boolean accessible = true;
 	protected SelectableObject focus;
 	
 	private InferiorContainerModel inferiors;
+	protected String debugger = "dosbox"; // Used by GdbModelTargetEnvironment
 	
 	public SessionModel(DosboxModel m, TargetObjectSchema schema) {
 		super(m, "Dosbox", schema);
@@ -57,13 +58,17 @@ public class SessionModel extends DefaultTargetModelRoot implements
 			//available.getName(), available, //
 			//breakpoints.getName(), breakpoints, //
 			ACCESSIBLE_ATTRIBUTE_NAME, accessible, //
-			PROMPT_ATTRIBUTE_NAME, "dosbox> ", //
+			PROMPT_ATTRIBUTE_NAME, "session> ", //
 			DISPLAY_ATTRIBUTE_NAME, display, //
 			TargetMethod.PARAMETERS_ATTRIBUTE_NAME, InferiorModel.PARAMETERS, //
 			SUPPORTED_ATTACH_KINDS_ATTRIBUTE_NAME, InferiorModel.SUPPORTED_KINDS, //
 			FOCUS_ATTRIBUTE_NAME, this // Satisfy schema. Will be set to first inferior.
 		), "Initialized");
 		
+		model.dosboxManager.addEventsListener(this);
+		model.dosboxManager.addConsoleOutputListener(this);
+
+		getVersion();
 		
 	}
 	
@@ -73,20 +78,19 @@ public class SessionModel extends DefaultTargetModelRoot implements
 	}
 	
 	protected void getVersion() {
-		/*
-		impl.gdb.waitForPrompt().thenCompose(__ -> {
-			return impl.gdb.consoleCapture("show version", CompletesWithRunning.CANNOT);
+		Msg.info(this, "session model: get version");
+		model.dosboxManager.waitForPrompt().thenCompose(__ -> {
+			return model.dosboxManager.consoleCapture("i");
 		}).thenAccept(out -> {
 			debugger = out;
 			changeAttributes(List.of(),
-				Map.of(DISPLAY_ATTRIBUTE_NAME, display = out.split("\n")[0].strip() //
+				Map.of(DISPLAY_ATTRIBUTE_NAME, display = out.split(":")[1].strip() //
 			), "Version refreshed");
 		}).exceptionally(e -> {
 			model.reportError(this, "Could not get GDB version", e);
-			debugger = "gdb";
+			debugger = "dosbox";
 			return null;
-		})
-		*/;
+		});
 	}
 
 	public String getDisplay() {
@@ -155,9 +159,7 @@ public class SessionModel extends DefaultTargetModelRoot implements
 	}
 
 	public CompletableFuture<Void> execute(String cmd) {
-		//return impl.gateFuture(impl.gdb.console(cmd).exceptionally(GdbModelImpl::translateEx));
-		Msg.debug(this, "execute..");
-		return AsyncUtils.NIL;
+		return model.gateFuture(model.dosboxManager.console(cmd).exceptionally(DosboxModel::translateEx));
 	}
 
 	@Override
@@ -168,8 +170,8 @@ public class SessionModel extends DefaultTargetModelRoot implements
 
 	@Override
 	public CompletableFuture<String> executeCapture(String cmd) {
-		Msg.debug(this,  "capture??");
-		return CompletableFuture.completedFuture("some string??");
+		Msg.info(this, "execute capture");
+		return CompletableFuture.completedFuture("output");
 	}
 
 	public CompletableFuture<Void> writeConfigurationOption(String key, Object value) {
@@ -185,13 +187,11 @@ public class SessionModel extends DefaultTargetModelRoot implements
 
 	@Override
 	public void output(String out) {
-		// TODO Auto-generated method stub
-		
+		Msg.info(this, "output() " + out);
 	}
 
 	public void breakpointDeleted(BreakpointInfo info, Cause cause) {
 		Msg.info(this,  "breakpoint deleted");
-		
 	}
 
 }

@@ -28,7 +28,7 @@ public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 	/**
 	 * TCP port to connect to
 	 */
-	private int port = 1234;
+	private int port = 3000;
 	
 	/**
 	 * Provides hostname option to UI
@@ -47,8 +47,11 @@ public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 	@Override
 	public CompletableFuture<? extends DebuggerObjectModel> build() {
 		return CompletableFuture.supplyAsync(() -> {
-			// Create a new model
-			return new DosboxModel();
+			// Create new model
+			return new DosboxModel(getHostname(), getPort());
+		}).thenCompose(model -> {
+			// Connect model to debugger
+			return model.start().thenApply(__ -> model);
 		});
 	}
 	

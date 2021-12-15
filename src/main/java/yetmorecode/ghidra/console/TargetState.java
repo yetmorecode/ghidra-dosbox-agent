@@ -1,6 +1,6 @@
-package yetmorecode.ghidra.dosbox.manager;
+package yetmorecode.ghidra.console;
 
-public enum DosboxState {
+public enum TargetState {
 	/**
 	 * not alive, because it has not be started
 	 */
@@ -11,7 +11,7 @@ public enum DosboxState {
 		}
 	},
 	/**
-	 * alive, but has not issued its first prompt, yet
+	 * alive, but has not ready for commands yet
 	 */
 	STARTING {
 		@Override
@@ -20,7 +20,7 @@ public enum DosboxState {
 		}
 	},
 	/**
-	 * dosbox is stopped
+	 * target is stopped
 	 */
 	STOPPED {
 		@Override
@@ -29,7 +29,7 @@ public enum DosboxState {
 		}
 	},
 	/**
-	 * dosbox is running
+	 * target is running
 	 */
 	RUNNING {
 		@Override
@@ -38,7 +38,7 @@ public enum DosboxState {
 		}
 	},
 	/**
-	 * dosbox has exited
+	 * target has exited
 	 */
 	EXIT {
 		@Override

@@ -1,4 +1,4 @@
-package yetmorecode.ghidra.dosbox.manager;
+package yetmorecode.ghidra.console;
 
 public interface ConsoleOutputListener {
 	/**

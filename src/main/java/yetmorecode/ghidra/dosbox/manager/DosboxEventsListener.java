@@ -1,6 +1,9 @@
 package yetmorecode.ghidra.dosbox.manager;
 
-public interface DosboxEventListener {
+import yetmorecode.ghidra.console.Cause;
+import yetmorecode.ghidra.console.TargetEventsListener;
+
+public interface DosboxEventsListener extends TargetEventsListener {
 	/**
 	 * A breakpoint has been created in the session
 	 * 
