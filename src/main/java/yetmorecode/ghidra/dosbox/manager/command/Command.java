@@ -1,12 +1,20 @@
 package yetmorecode.ghidra.dosbox.manager.command;
 
 import yetmorecode.ghidra.dosbox.manager.Cause;
+import yetmorecode.ghidra.dosbox.manager.DosboxManager;
+import yetmorecode.ghidra.dosbox.manager.PendingCommand;
 import yetmorecode.ghidra.dosbox.manager.event.CommandCompletedEvent;
 import yetmorecode.ghidra.dosbox.manager.event.CommandRunningEvent;
 import yetmorecode.ghidra.dosbox.manager.event.Event;
 
 public abstract class Command<T> implements Cause {
 
+	protected DosboxManager manager;
+	
+	public Command(DosboxManager m) {
+		manager = m;
+	}
+	
 	public boolean handle(Event<?> evt, PendingCommand<?> pending) {
 		if (evt instanceof CommandRunningEvent) {
 			return false;
@@ -28,4 +36,16 @@ public abstract class Command<T> implements Cause {
 	 * @return the object "returned" by the command
 	 */
 	public abstract T complete(PendingCommand<?> pending);
+	
+	/**
+	 * Encode the command
+	 * 
+	 * @return the encoded command
+	 */
+	public abstract String encode();
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 }

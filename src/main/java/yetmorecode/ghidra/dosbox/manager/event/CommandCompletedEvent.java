@@ -1,9 +1,10 @@
 package yetmorecode.ghidra.dosbox.manager.event;
 
-public class CommandCompletedEvent<T> extends Event<T> {
+public class CommandCompletedEvent extends Event<String> {
 
-	protected CommandCompletedEvent(T info) {
+	public CommandCompletedEvent(String info) {
 		super(info);
 	}
+
 
 }
