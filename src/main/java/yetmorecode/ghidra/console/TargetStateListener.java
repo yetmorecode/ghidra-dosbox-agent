@@ -1,6 +1,6 @@
 package yetmorecode.ghidra.console;
 
-import ghidra.util.TriConsumer;
+import yetmorecode.ghidra.async.TriConsumer;
 
 public interface TargetStateListener extends TriConsumer<TargetState, TargetState, Cause> {
 	/**

@@ -13,6 +13,7 @@ import ghidra.dbg.target.TargetActiveScope;
 import ghidra.dbg.target.TargetAttachable;
 import ghidra.dbg.target.TargetAttacher;
 import ghidra.dbg.target.TargetConsole;
+import ghidra.dbg.target.TargetConsole.Channel;
 import ghidra.dbg.target.TargetEventScope;
 import ghidra.dbg.target.TargetFocusScope;
 import ghidra.dbg.target.TargetInterpreter;
@@ -58,7 +59,7 @@ public class SessionModel extends DefaultTargetModelRoot implements
 			//available.getName(), available, //
 			//breakpoints.getName(), breakpoints, //
 			ACCESSIBLE_ATTRIBUTE_NAME, accessible, //
-			PROMPT_ATTRIBUTE_NAME, "session> ", //
+			PROMPT_ATTRIBUTE_NAME, "dosbox>", //
 			DISPLAY_ATTRIBUTE_NAME, display, //
 			TargetMethod.PARAMETERS_ATTRIBUTE_NAME, InferiorModel.PARAMETERS, //
 			SUPPORTED_ATTACH_KINDS_ATTRIBUTE_NAME, InferiorModel.SUPPORTED_KINDS, //
@@ -97,20 +98,6 @@ public class SessionModel extends DefaultTargetModelRoot implements
 		return display;
 	}
 
-	public void output(GdbManager.Channel gdbChannel, String out) {
-		TargetConsole.Channel dbgChannel;
-		switch (gdbChannel) {
-			case STDOUT:
-				dbgChannel = TargetConsole.Channel.STDOUT;
-				break;
-			case STDERR:
-				dbgChannel = TargetConsole.Channel.STDERR;
-				break;
-			default:
-				throw new AssertionError();
-		}
-		listeners.fire.consoleOutput(this, dbgChannel, out);
-	}
 
 	public void inferiorSelected(InferiorModel inferior, GdbCause cause) {
 		InferiorModel inf = inferiors.getTargetInferior(inferior);
@@ -186,8 +173,8 @@ public class SessionModel extends DefaultTargetModelRoot implements
 	}
 
 	@Override
-	public void output(String out) {
-		Msg.info(this, "output() " + out);
+	public void output(String out) {		
+		listeners.fire.consoleOutput(this, Channel.STDOUT, "nothing");
 	}
 
 	public void breakpointDeleted(BreakpointInfo info, Cause cause) {

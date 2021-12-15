@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.CompletableFuture;
 
-import ghidra.util.Msg;
 import yetmorecode.ghidra.console.ConsoleManager;
 
 public class InputOutputThread extends Thread {
@@ -22,7 +21,7 @@ public class InputOutputThread extends Thread {
 	
 	public InputOutputThread(ConsoleManager manager, String hostname, int port) throws UnknownHostException, IOException {
 		this.manager = manager;
-		Msg.info(this, "connecting to socket: " + hostname + ":" + port);
+		//Msg.info(this, "connecting to socket: " + hostname + ":" + port);
 		clientSocket = new Socket(hostname, port);
 		try {
 			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -52,9 +51,9 @@ public class InputOutputThread extends Thread {
 					manager.processLine(l);
 				});
 			}
-			Msg.info(this, "io: done reading: alive = " + isAlive());
+			//Msg.info(this, "io: done reading: alive = " + isAlive());
 		} catch (Throwable e) {
-			Msg.debug(this, "Connection error: " + e.getMessage());
+			//Msg.debug(this, "Connection error: " + e.getMessage());
 			manager.terminate();
 		}
 	}

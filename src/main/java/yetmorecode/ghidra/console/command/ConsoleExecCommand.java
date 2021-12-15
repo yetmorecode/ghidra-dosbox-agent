@@ -1,6 +1,5 @@
 package yetmorecode.ghidra.console.command;
 
-import ghidra.util.Msg;
 import yetmorecode.ghidra.console.ConsoleManager;
 import yetmorecode.ghidra.console.event.ConsoleOutputEvent;
 import yetmorecode.ghidra.console.event.Event;
@@ -12,14 +11,11 @@ public class ConsoleExecCommand extends Command<String> {
 	public ConsoleExecCommand(ConsoleManager manager, String command) {
 		super(manager);
 		this.command = command;
-		Msg.info(this, "new console command: " + command);
-		
 	}
 	
 	@Override
 	public boolean handle(Event<?> evt, PendingCommand<?> pending) {
 		if (evt instanceof ConsoleOutputEvent) {
-			// Need to claim to console output events
 			pending.claim(evt);
 			return true;
 		}
@@ -32,9 +28,7 @@ public class ConsoleExecCommand extends Command<String> {
 		for (var out : pending.findAllOf(ConsoleOutputEvent.class)) {
 			builder.append(out.getOutput());
 		}
-		var out = builder.toString();
-		Msg.info(this, "complete " + this + ": " + out);
-		return out;
+		return builder.toString();
 	}
 
 	@Override

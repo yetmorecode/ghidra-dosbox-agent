@@ -1,64 +1,27 @@
 package yetmorecode.ghidra.dosbox.manager;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import ghidra.async.AsyncLock;
 import ghidra.async.AsyncReference;
-import ghidra.async.AsyncUtils;
-import ghidra.async.AsyncLock.Hold;
-import ghidra.dbg.error.DebuggerModelTerminatingException;
-import ghidra.dbg.util.HandlerMap;
 import ghidra.util.Msg;
-import ghidra.util.datastruct.ListenerSet;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
-import yetmorecode.ghidra.console.Cause.Causes;
 import yetmorecode.ghidra.console.ConsoleManager;
 import yetmorecode.ghidra.console.ConsoleOutputListener;
+import yetmorecode.ghidra.console.TCPConsoleManager;
+import yetmorecode.ghidra.console.TargetEventsListener;
 import yetmorecode.ghidra.console.TargetOutputListener;
 import yetmorecode.ghidra.console.TargetState;
 import yetmorecode.ghidra.console.TargetStateListener;
 import yetmorecode.ghidra.console.command.Command;
 import yetmorecode.ghidra.console.command.ConsoleExecCommand;
-import yetmorecode.ghidra.console.command.PendingCommand;
-import yetmorecode.ghidra.console.event.ConsoleOutputEvent;
 
-import yetmorecode.ghidra.dosbox.manager.event.DosboxEvent;
-
-public class DosboxManager {
-
-	
-	
-	
-
+public class DosboxManager implements ConsoleManager {
 	//private final AsyncTimer timer = AsyncTimer.DEFAULT_TIMER;
-
-	
 	private final AtomicBoolean exited = new AtomicBoolean(false);
-	
-	
-	private final AsyncReference<Boolean, Void> prompt = new AsyncReference<>(false);
-	
+	private final AsyncReference<Boolean, Void> prompt = new AsyncReference<>(false);	
 	protected String hostname = "localhost";
 	protected int port = 3000;
-	
 	private boolean terminated = false;
 	
 	private ConsoleManager consoleManager;
@@ -83,7 +46,7 @@ public class DosboxManager {
 	public DosboxManager(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
-		consoleManager = new ConsoleManager(hostname, port);
+		consoleManager = new TCPConsoleManager(hostname, port);
 	}
 	
 	public ConsoleManager getConsoleManager() {
@@ -110,7 +73,7 @@ public class DosboxManager {
 		return consoleManager.isAlive();
 	}
 	
-	protected <T> CompletableFuture<T> execute(Command<? extends T> cmd) {
+	public <T> CompletableFuture<T> execute(Command<? extends T> cmd) {
 		return consoleManager.execute(cmd);
 	}
 	
@@ -127,9 +90,8 @@ public class DosboxManager {
 	 * 
 	 * @return a future which completes when the rc commands are complete
 	 */
-	protected CompletableFuture<Void> initialize() {
-		Msg.info(this, "doing rc()");
-		return AsyncUtils.NIL;
+	public CompletableFuture<Void> initialize() {
+		return consoleManager.initialize();
 	}
 	
 	public synchronized void terminate() {
@@ -165,23 +127,31 @@ public class DosboxManager {
 		consoleManager.removeStateListener(listener);
 	}
 
-	public void addEventsListener(DosboxEventsListener listener) {
-		consoleManager.addEventsListener(listener);
-	}
-
-	public void removeEventsListener(DosboxEventsListener listener) {
-		consoleManager.removeEventsListener(listener);
-	}
-	
 	public CompletableFuture<Void> waitForPrompt() {
 		return prompt.waitValue(true);
 	}
 	
 	public CompletableFuture<Void> console(String command) {
+		Msg.info(this, "command: " + command);
 		return execute(new ConsoleExecCommand(this.getConsoleManager(), command)).thenApply(e -> null);
 	}
 
 	public CompletableFuture<String> consoleCapture(String command) {
 		return execute(new ConsoleExecCommand(this.getConsoleManager(), command));
+	}
+
+	@Override
+	public void addEventsListener(TargetEventsListener listener) {
+		consoleManager.addEventsListener(listener);
+	}
+
+	@Override
+	public void removeEventsListener(TargetEventsListener listener) {
+		consoleManager.removeEventsListener(listener);
+	}
+
+	@Override
+	public void synthesizeConsoleOut(String line) {
+		consoleManager.synthesizeConsoleOut(line);
 	}
 }
