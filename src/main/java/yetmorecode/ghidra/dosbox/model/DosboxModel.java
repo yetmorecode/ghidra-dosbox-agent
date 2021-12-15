@@ -1,9 +1,8 @@
-package agent.dosbox.model.impl;
+package yetmorecode.ghidra.dosbox.model;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import agent.gdb.model.impl.GdbModelTargetSession;
 import ghidra.dbg.DebuggerModelClosedReason;
 import ghidra.dbg.agent.AbstractDebuggerObjectModel;
 import ghidra.dbg.target.TargetObject;
@@ -13,14 +12,16 @@ import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.address.DefaultAddressFactory;
 import ghidra.program.model.address.GenericAddressSpace;
+import yetmorecode.ghidra.dosbox.manager.DosboxManager;
+import yetmorecode.ghidra.dosbox.model.target.SessionModel;
 
-public class DosboxModelImpl extends AbstractDebuggerObjectModel {
+public class DosboxModel extends AbstractDebuggerObjectModel {
 	
 	protected static final String SPACE_NAME = "ram";
 	
 	protected static final AnnotatedSchemaContext SCHEMA_CTX = new AnnotatedSchemaContext();
 	protected static final TargetObjectSchema ROOT_SCHEMA =
-		SCHEMA_CTX.getSchemaForClass(DosboxModelTargetSession.class);
+		SCHEMA_CTX.getSchemaForClass(SessionModel.class);
 	
 	protected final AddressSpace space =
 		new GenericAddressSpace(SPACE_NAME, 64, AddressSpace.TYPE_RAM, 0);
@@ -28,14 +29,22 @@ public class DosboxModelImpl extends AbstractDebuggerObjectModel {
 		new DefaultAddressFactory(new AddressSpace[] { space });
 	
 
-	private DosboxModelTargetSession session;
-	protected final CompletableFuture<DosboxModelTargetSession> completedSession;
+	public DosboxManager dosbox;
+	private SessionModel session;
+	protected final CompletableFuture<SessionModel> completedSession;
 	
-	public DosboxModelImpl() {
+	public DosboxModel() {
 		super();
-		this.session = new DosboxModelTargetSession(this, ROOT_SCHEMA);
-		
-		this.completedSession = CompletableFuture.completedFuture(session);
+		dosbox = new DosboxManager();
+		session = new SessionModel(this, ROOT_SCHEMA);
+		completedSession = CompletableFuture.completedFuture(session);
+	}
+	
+	public CompletableFuture<Void> start() {
+		return CompletableFuture.runAsync(() -> {
+		}).thenCompose(__ -> {
+			return dosbox.runRC();
+		});
 	}
 	
 	@Override
@@ -46,7 +55,7 @@ public class DosboxModelImpl extends AbstractDebuggerObjectModel {
 	public void terminate() throws IOException {
 		listeners.fire.modelClosed(DebuggerModelClosedReason.NORMAL);
 		session.invalidateSubtree(session, "GDB is terminating");
-		//gdb.terminate();
+		dosbox.terminate();
 	}
 
 	@Override
