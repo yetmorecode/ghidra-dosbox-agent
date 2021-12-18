@@ -2,6 +2,7 @@ package yetmorecode.ghidra.dosbox.manager;
 
 import yetmorecode.ghidra.console.Cause;
 import yetmorecode.ghidra.console.TargetEventsListener;
+import yetmorecode.ghidra.dosbox.manager.command.breakpoint.Breakpoint;
 
 public interface DosboxEventsListener extends TargetEventsListener {
 	/**
@@ -10,7 +11,7 @@ public interface DosboxEventsListener extends TargetEventsListener {
 	 * @param info information about the new breakpoint
 	 * @param cause the cause of this event
 	 */
-	default void breakpointCreated(BreakpointInfo info, Cause cause) {
+	default void breakpointCreated(Breakpoint info, Cause cause) {
 		
 	}
 
@@ -21,7 +22,7 @@ public interface DosboxEventsListener extends TargetEventsListener {
 	 * @param oldInfo old information about the modified breakpoint
 	 * @param cause the cause of this event
 	 */
-	default void breakpointModified(BreakpointInfo newInfo, BreakpointInfo oldInfo, Cause cause) {
+	default void breakpointModified(Breakpoint newInfo, Breakpoint oldInfo, Cause cause) {
 		
 	}
 
@@ -31,7 +32,7 @@ public interface DosboxEventsListener extends TargetEventsListener {
 	 * @param info information about the now-deleted breakpoint
 	 * @param cause the cause of this event
 	 */
-	default void breakpointDeleted(BreakpointInfo info, Cause cause) {
+	default void breakpointDeleted(Breakpoint info, Cause cause) {
 		
 	}
 }

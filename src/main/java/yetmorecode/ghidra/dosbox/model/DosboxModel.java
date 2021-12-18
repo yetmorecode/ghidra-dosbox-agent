@@ -1,6 +1,8 @@
 package yetmorecode.ghidra.dosbox.model;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,13 +38,12 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 	protected final AddressFactory addressFactory =
 		new DefaultAddressFactory(new AddressSpace[] { space });
 	
-
 	public DosboxManager dosboxManager;
 	private SessionModel session;
 	protected final CompletableFuture<SessionModel> completedSession;
-	
 	protected String hostname = "localhost";
 	protected int port = 3000;
+	protected Map<Object, TargetObject> objectMap = new HashMap<>();
 	
 	public DosboxModel(String hostname, int port) {
 		super();
@@ -119,4 +120,15 @@ public class DosboxModel extends AbstractDebuggerObjectModel {
 		return ExceptionUtils.rethrow(ex);
 	}
 
+	public void addModelObject(Object object, TargetObject targetObject) {
+		objectMap.put(object, targetObject);
+	}
+
+	public TargetObject getModelObject(Object object) {
+		return objectMap.get(object);
+	}
+
+	public void deleteModelObject(Object object) {
+		objectMap.remove(object);
+	}
 }

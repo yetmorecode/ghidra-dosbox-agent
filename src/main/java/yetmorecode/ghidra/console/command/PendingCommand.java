@@ -199,6 +199,6 @@ public class PendingCommand<T> extends CompletableFuture<T> implements Cause {
 	
 	@Override
 	public String toString() {
-		return "Pending(" + command + ")";
+		return command.toString() + '*';
 	}
 }

@@ -1,7 +1,7 @@
 package yetmorecode.ghidra.console.event;
 
-public class CommandRunningEvent<T> extends Event<T> {
-	public CommandRunningEvent(T info) {
+public class CommandRunningEvent extends CommandCompletedEvent {
+	public CommandRunningEvent(String info) {
 		super(info);
 	}
 }

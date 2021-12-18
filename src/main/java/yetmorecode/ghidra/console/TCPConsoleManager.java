@@ -13,6 +13,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import agent.gdb.manager.GdbManager.Channel;
+import agent.gdb.manager.impl.GdbEvent;
+import agent.gdb.manager.parsing.GdbParsingUtils.GdbParseError;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 import yetmorecode.ghidra.async.AsyncLock;
@@ -23,11 +25,14 @@ import yetmorecode.ghidra.console.Cause.Causes;
 import yetmorecode.ghidra.console.command.Command;
 import yetmorecode.ghidra.console.command.ConsoleExecCommand;
 import yetmorecode.ghidra.console.command.PendingCommand;
+import yetmorecode.ghidra.console.event.CommandCompletedEvent;
 import yetmorecode.ghidra.console.event.ConsoleOutputEvent;
 import yetmorecode.ghidra.console.event.Event;
 import yetmorecode.ghidra.console.io.InputOutputThread;
+import yetmorecode.ghidra.dosbox.manager.command.DosboxEvent;
 import ghidra.dbg.error.DebuggerModelTerminatingException;
 import ghidra.dbg.util.HandlerMap;
+import ghidra.dbg.util.PrefixMap;
 import ghidra.util.Msg;
 import ghidra.util.datastruct.ListenerSet;
 
@@ -66,6 +71,7 @@ public class TCPConsoleManager implements ConsoleManager {
 
 	private PendingCommand<?> curCmd = null;
 	private final HandlerMap<Event<?>, Void, Void> handlerMap = new HandlerMap<>();
+	private final PrefixMap<DosboxEvent, ParseError> prefixMap = new PrefixMap<>();
 	
 	protected final ExecutorService eventThread = Executors.newSingleThreadExecutor();
 	private InputOutputThread ioThread;
@@ -210,7 +216,10 @@ public class TCPConsoleManager implements ConsoleManager {
 	}
 	
 	public synchronized void processLine(String line) {
-		processEvent(new ConsoleOutputEvent(line.strip()));
+		// prefix to event first?
+		// but there is only one active command anyway... so its sure our response?.. nah...
+		// debugger can send stuff too
+		processEvent(new CommandCompletedEvent(line.strip()));
 	}
 	
 	public CompletableFuture<Void> runRC() {
@@ -299,6 +308,14 @@ public class TCPConsoleManager implements ConsoleManager {
 		handlerMap.putVoid(ConsoleOutputEvent.class, this::processStdOut);
 	}
 	
+	public HandlerMap<Event<?>, Void, Void> getHandlerMap() {
+		return handlerMap;
+	}
+	
+	public PrefixMap<DosboxEvent, ParseError> getPrefixMap() {
+		return prefixMap;
+	}
+	
 	/**
 	 * Schedule a command for execution
 	 * 
@@ -310,7 +327,7 @@ public class TCPConsoleManager implements ConsoleManager {
 		//checkStartedNotExit();
 		PendingCommand<T> pcmd = new PendingCommand<>(cmd);
 
-		//Msg.info(this, "WAITING cmdLock: " + pcmd);
+		Msg.info(this, "WAITING cmdLock: " + pcmd);
 		cmdLock.acquire(null).thenAccept(hold -> {
 			cmdLockHold.set(hold);
 			//Msg.info(this, "ACQUIRED cmdLock: " + pcmd);
@@ -331,7 +348,7 @@ public class TCPConsoleManager implements ConsoleManager {
 					return;
 				}
 				curCmd = pcmd;
-				//Msg.info(this, "CURCMD = " + curCmd);
+				Msg.info(this, "CURCMD = " + curCmd);
 				
 				PrintWriter wr = ioThread.writer;				
 				String text = cmd.encode();

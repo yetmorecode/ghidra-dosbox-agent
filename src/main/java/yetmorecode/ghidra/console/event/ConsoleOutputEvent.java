@@ -11,6 +11,6 @@ public class ConsoleOutputEvent extends Event<String> {
 	
 	@Override
 	public String toString() {
-		return "console output: " + getOutput();
+		return getClass().getSimpleName() + ": " + getOutput();
 	}
 }

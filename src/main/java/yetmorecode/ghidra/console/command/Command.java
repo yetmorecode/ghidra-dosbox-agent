@@ -1,5 +1,6 @@
 package yetmorecode.ghidra.console.command;
 
+import ghidra.util.Msg;
 import yetmorecode.ghidra.console.Cause;
 import yetmorecode.ghidra.console.ConsoleManager;
 import yetmorecode.ghidra.console.event.CommandCompletedEvent;
@@ -14,10 +15,12 @@ public abstract class Command<T> implements Cause {
 	}
 	
 	public boolean handle(Event<?> evt, PendingCommand<?> pending) {
+		Msg.info(this, pending + ": " + evt);
 		if (evt instanceof CommandRunningEvent) {
 			return false;
 		}
 		if (evt instanceof CommandCompletedEvent) {
+			Msg.info(this, "claimed");
 			pending.claim(evt);
 			return true;
 		}

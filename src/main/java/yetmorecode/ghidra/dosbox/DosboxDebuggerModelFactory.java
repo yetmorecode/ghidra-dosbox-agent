@@ -28,7 +28,7 @@ public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 	/**
 	 * TCP port to connect to
 	 */
-	private int port = 3000;
+	private int port = 2999;
 	
 	/**
 	 * Provides hostname option to UI

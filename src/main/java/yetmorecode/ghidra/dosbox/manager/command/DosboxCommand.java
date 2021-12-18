@@ -7,7 +7,11 @@ public abstract class DosboxCommand<T> extends Command<T> {
 	protected DosboxManager manager;
 	
 	public DosboxCommand(DosboxManager m) {
-		super(m.getConsoleManager());
+		super(m);
 		manager = m;
+	}
+	
+	public String toString() {
+		return getClass().getSimpleName();
 	}
 }

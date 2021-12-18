@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import agent.gdb.manager.GdbManager.Channel;
+import ghidra.dbg.util.HandlerMap;
+import ghidra.dbg.util.PrefixMap;
 import yetmorecode.ghidra.console.command.Command;
+import yetmorecode.ghidra.console.event.Event;
+import yetmorecode.ghidra.dosbox.manager.command.DosboxEvent;
 
 public interface ConsoleManager {
 	/**
@@ -50,6 +54,8 @@ public interface ConsoleManager {
 	
 	public boolean isAlive();
 	
+	public PrefixMap<DosboxEvent, ParseError> getPrefixMap();
+	
 	public void terminate();
 	
 	public <T> CompletableFuture<T> execute(Command<? extends T> cmd);
@@ -57,4 +63,6 @@ public interface ConsoleManager {
 	public CompletableFuture<Void> initialize();
 	
 	public void synthesizeConsoleOut(String line);
+	
+	public HandlerMap<Event<?>, Void, Void> getHandlerMap();
 }
