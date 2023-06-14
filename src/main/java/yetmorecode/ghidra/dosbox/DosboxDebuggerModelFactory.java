@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import ghidra.dbg.DebuggerModelFactory;
 import ghidra.dbg.DebuggerObjectModel;
 import ghidra.dbg.util.ConfigurableFactory.FactoryDescription;
-import yetmorecode.ghidra.dosbox.model.DosboxModel;
+import yetmorecode.ghidra.dosbox.pty.TCPPtyFactory;
 
 /**
  * Provides DOSBox-X support as debugger agent
@@ -46,13 +46,8 @@ public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 	
 	@Override
 	public CompletableFuture<? extends DebuggerObjectModel> build() {
-		return CompletableFuture.supplyAsync(() -> {
-			// Create new model
-			return new DosboxModel(getHostname(), getPort());
-		}).thenCompose(model -> {
-			// Connect model to debugger
-			return model.start().thenApply(__ -> model);
-		});
+		var model = new DosboxModel(new TCPPtyFactory(hostname, port));
+		return model.startGDB(null, new String[0]).thenApply(__ -> model);
 	}
 	
 	/**
