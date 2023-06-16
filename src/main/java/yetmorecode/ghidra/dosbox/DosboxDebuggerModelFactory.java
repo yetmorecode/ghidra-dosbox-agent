@@ -8,7 +8,7 @@ import ghidra.dbg.DebuggerObjectModel;
 
 @FactoryDescription(
 	brief = "DOSBox-X debugger via TCP",
-	htmlDetails = "Connects to DOSBox-X via TCP"
+	htmlDetails = "Connects to DOSBox-X via TCP2"
 )
 public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 
@@ -32,11 +32,9 @@ public class DosboxDebuggerModelFactory implements DebuggerModelFactory {
 	
 	@Override
 	public CompletableFuture<? extends DebuggerObjectModel> build() {	
-		return CompletableFuture.supplyAsync(() -> {
-			var model = new DosboxModel(getHostname(), getPort());
-			model.start();
-			return model;
-		});
+		var model = new DosboxModel(getHostname(), getPort());
+		return model.start().thenApply(__ -> model);
+		
 	}
 
 	public String getHostname() {
