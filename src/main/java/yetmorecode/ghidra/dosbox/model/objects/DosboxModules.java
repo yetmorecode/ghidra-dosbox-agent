@@ -29,7 +29,7 @@ public class DosboxModules
 	public DosboxModules(AbstractDebuggerObjectModel model, DosboxModelRoot parent) {
 		super(model, parent, "Modules", "ModuleContainer");
 		
-		moduleA = new DosboxModule(model, this, "bmh.exe", 0x10000, 0x6a94a);
+		moduleA = new DosboxModule(model, this, "bmh.exe", 0, 0x6a94a);
 		
 		changeElements(List.of(), List.of(moduleA), "Added modules");
 		

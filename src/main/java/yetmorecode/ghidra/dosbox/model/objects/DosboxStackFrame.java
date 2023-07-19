@@ -1,47 +1,26 @@
 package yetmorecode.ghidra.dosbox.model.objects;
 
-import java.util.List;
 import java.util.Map;
 
 import ghidra.dbg.agent.AbstractDebuggerObjectModel;
 import ghidra.dbg.agent.DefaultTargetObject;
 import ghidra.dbg.target.TargetObject;
 import ghidra.dbg.target.TargetStackFrame;
-import ghidra.dbg.target.schema.TargetAttributeType;
-import ghidra.dbg.target.schema.TargetElementType;
 import ghidra.dbg.target.schema.TargetObjectSchemaInfo;
 import ghidra.dbg.util.PathUtils;
 
-@TargetObjectSchemaInfo(
-		name = "StackFrame",
-		elements = {
-			@TargetElementType(type = Void.class) },
-		attributes = {
-			@TargetAttributeType(
-					name = "Registers",
-					type = DosboxRegisters.class,
-					required = true,
-					fixed = false),
-			@TargetAttributeType(type = Void.class) })
-public class DosboxStackFrame extends DefaultTargetObject<TargetObject, TargetObject> implements TargetStackFrame {
+@TargetObjectSchemaInfo(name = DosboxStackFrame.NAME)
+public class DosboxStackFrame extends DefaultTargetObject<TargetObject, DosboxStack> implements TargetStackFrame {
 
-	private DosboxRegisters registers;
+	public static final String NAME = "StackFrame";
 	
-	public DosboxStackFrame(AbstractDebuggerObjectModel model, TargetObject parent, String key, String typeHint) {
-		super(model, parent, PathUtils.makeKey(key), typeHint);
-		// TODO Auto-generated constructor stub
-		
+	public DosboxStackFrame(AbstractDebuggerObjectModel model, DosboxStack parent, String key, Long pc) {
+		super(model, parent, PathUtils.makeKey(key), NAME);
 		setAttributes(Map.of(
-			PC_ATTRIBUTE_NAME, model.getAddressFactory().getDefaultAddressSpace().getAddress(0x10010),
-			VALUE_ATTRIBUTE_NAME, 0x10010
-			
+			PC_ATTRIBUTE_NAME, model.getAddressFactory().getDefaultAddressSpace().getAddress(pc),
+			VALUE_ATTRIBUTE_NAME, Long.toHexString(pc),
+			DISPLAY_ATTRIBUTE_NAME, "frame @" + Long.toHexString(pc)
 		), "Init");
-		
-		registers = new DosboxRegisters(model, this);
-		
-		changeAttributes(List.of(), Map.of(
-			"Registers", registers
-		), "Dynamic");
 	}
 
 }

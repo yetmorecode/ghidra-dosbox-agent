@@ -7,28 +7,28 @@ import ghidra.dbg.agent.AbstractDebuggerObjectModel;
 import ghidra.dbg.agent.DefaultTargetObject;
 import ghidra.dbg.target.TargetObject;
 import ghidra.dbg.target.TargetRegister;
-import ghidra.dbg.target.schema.TargetAttributeType;
-import ghidra.dbg.target.schema.TargetElementType;
 import ghidra.dbg.target.schema.TargetObjectSchemaInfo;
 import ghidra.dbg.util.PathUtils;
 
-@TargetObjectSchemaInfo(name = "RegisterDescriptor", elements = {
-		@TargetElementType(type = Void.class) }, attributes = {
-			@TargetAttributeType(type = Void.class) })
-public class DosboxRegister 
-	extends DefaultTargetObject<TargetObject, DosboxRegisters>
-	implements TargetRegister {
+@TargetObjectSchemaInfo(name = DosboxRegister.NAME)
+public class DosboxRegister extends DefaultTargetObject<TargetObject, DosboxRegisterContainerAndBank> implements TargetRegister {
 
-	public DosboxRegister(AbstractDebuggerObjectModel model, DosboxRegisters parent, String key) {
-		super(model, parent, PathUtils.makeKey(key), "Register");
-		// TODO Auto-generated constructor stub
+	public static final String NAME = "Register";
+	
+	public DosboxRegister(AbstractDebuggerObjectModel model, DosboxRegisterContainerAndBank parent, String name) {
+		this(model, parent, name, Long.valueOf(0));
+	}
+	
+	public DosboxRegister(AbstractDebuggerObjectModel model, DosboxRegisterContainerAndBank parent, String name, Long value) {
+		super(model, parent, PathUtils.makeKey(name), NAME);
 		
 		changeAttributes(List.of(), List.of(), Map.of( //
 			CONTAINER_ATTRIBUTE_NAME, parent, //
-			BIT_LENGTH_ATTRIBUTE_NAME, 32, //
-			DISPLAY_ATTRIBUTE_NAME, key,
-			VALUE_ATTRIBUTE_NAME, 0x12
-		), "Initialized");
+			BIT_LENGTH_ATTRIBUTE_NAME, Integer.valueOf(32), //
+			DISPLAY_ATTRIBUTE_NAME, name + " : " + Long.toHexString(value),
+			VALUE_ATTRIBUTE_NAME, Long.toHexString(value),
+			MODIFIED_ATTRIBUTE_NAME, false
+		), "Initialized " + name + " = 0x" + Long.toHexString(value));
 	}
 
 }

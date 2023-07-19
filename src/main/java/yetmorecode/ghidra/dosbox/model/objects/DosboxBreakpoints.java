@@ -1,5 +1,8 @@
 package yetmorecode.ghidra.dosbox.model.objects;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -8,31 +11,34 @@ import ghidra.dbg.agent.AbstractDebuggerObjectModel;
 import ghidra.dbg.agent.DefaultTargetObject;
 import ghidra.dbg.target.TargetBreakpointLocationContainer;
 import ghidra.dbg.target.TargetBreakpointSpec.TargetBreakpointKind;
-import ghidra.dbg.target.schema.TargetAttributeType;
-import ghidra.dbg.target.schema.TargetElementType;
-import ghidra.dbg.target.schema.TargetObjectSchemaInfo;
-import ghidra.dbg.target.schema.TargetObjectSchema.ResyncMode;
 import ghidra.dbg.target.TargetBreakpointSpecContainer;
+import ghidra.dbg.target.schema.TargetElementType;
+import ghidra.dbg.target.schema.TargetObjectSchema.ResyncMode;
+import ghidra.dbg.target.schema.TargetObjectSchemaInfo;
 import ghidra.program.model.address.AddressRange;
 import ghidra.util.Msg;
 
 @TargetObjectSchemaInfo(
-		name = "BreakpointsContainer",
-		elements = { //
-			@TargetElementType(type = DosboxBreakpoint.class) //
-		}, //
-		elementResync = ResyncMode.ALWAYS, //
-		attributes = { //
-			@TargetAttributeType(type = Object.class) //
-		},
-		canonicalContainer = true)
-public class DosboxBreakpoints 
-	extends DefaultTargetObject<DosboxBreakpoint, DosboxModelRoot> 
+	name = DosboxBreakpoints.NAME,
+	elements = { @TargetElementType(type = DosboxBreakpoint.class) },
+	elementResync = ResyncMode.ALWAYS,
+	canonicalContainer = true
+)
+public class DosboxBreakpoints extends DefaultTargetObject<DosboxBreakpoint, DosboxModelRoot> 
 	implements TargetBreakpointLocationContainer, TargetBreakpointSpecContainer {
 
-	public DosboxBreakpoints(AbstractDebuggerObjectModel model, DosboxModelRoot parent, String key, String typeHint) {
-		super(model, parent, key, typeHint);
-		// TODO Auto-generated constructor stub
+	public static final String NAME = "Breakpoints";
+	
+	public DosboxBreakpoints(AbstractDebuggerObjectModel model, DosboxModelRoot parent) {
+		super(model, parent, NAME, NAME);
+		var breakpoints = new LinkedList<DosboxBreakpoint>();
+		breakpoints.push(new DosboxBreakpoint(model, this, "0", 0x10010));
+		breakpoints.push(new DosboxBreakpoint(model, this, "1", 0x20000));
+		breakpoints.push(new DosboxBreakpoint(model, this, "2", 0x20010));
+		changeElements(List.of(), breakpoints, "Changed breakpoints");
+		changeAttributes(List.of(), Map.of(
+			SUPPORTED_BREAK_KINDS_ATTRIBUTE_NAME, TargetBreakpointKindSet.of(TargetBreakpointKind.SW_EXECUTE)
+		), "Init");
 	}
 
 	@Override
@@ -46,7 +52,4 @@ public class DosboxBreakpoints
 		Msg.info(this, "placing breakpoint by range: " + range.getMinAddress().toString());
 		return AsyncUtils.NIL;
 	}
-
-
-
 }

@@ -38,10 +38,7 @@ public class DosboxMemoryRegion
 				READABLE_ATTRIBUTE_NAME, true, //
 				WRITABLE_ATTRIBUTE_NAME, true, //
 				EXECUTABLE_ATTRIBUTE_NAME, true, //
-				DISPLAY_ATTRIBUTE_NAME, r.toString(), //
-				"range", r.toString(),
-				"length", r.getLength(),
-				"read", "true"
+				DISPLAY_ATTRIBUTE_NAME, r.toString() //
 			), "Initialized");
 		} catch (AddressOverflowException | AddressOutOfBoundsException e) {
 			// TODO Auto-generated catch block
